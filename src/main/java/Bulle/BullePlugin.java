@@ -65,7 +65,7 @@ public class BullePlugin extends JavaPlugin implements Listener, CommandExecutor
         getServer().getPluginManager().registerEvents(this, this);
 
         loadEconomy();
-        getLogger().info("Bulle Monster-Plugin v4.1 (Grind Prices Configured) Started!");
+        getLogger().info("Bulle Monster-Plugin v4.2 (Crates Removed) Started!");
     }
 
     // --- EKONOMI-SYSTEM ---
@@ -119,7 +119,6 @@ public class BullePlugin extends JavaPlugin implements Listener, CommandExecutor
         gui.setItem(13, item.clone());
 
         if (currentLvl < 3) {
-            // GRIND UPDATE: Level 2 kostar 150, Level 3 kostar 300
             int price = (currentLvl == 1) ? 150 : 300;
             ItemStack buyButton = new ItemStack(Material.EMERALD_BLOCK);
             ItemMeta buyMeta = buyButton.getItemMeta();
@@ -167,7 +166,6 @@ public class BullePlugin extends JavaPlugin implements Listener, CommandExecutor
             if (!isBulleItem(item)) return;
 
             int currentLvl = getBulleLevel(item);
-            // GRIND UPDATE: Level 2 kostar 150, Level 3 kostar 300
             int price = (currentLvl == 1) ? 150 : 300;
             int playerBullar = getBullar(player.getUniqueId());
 
@@ -229,11 +227,7 @@ public class BullePlugin extends JavaPlugin implements Listener, CommandExecutor
             double radius = (lvl == 1) ? 5.0 : (lvl == 2) ? 10.0 : 15.0;
             spawnShockwave(event.getEntity().getLocation(), radius);
 
-            // Hämtar density-nivån från vapnet
             int densityLevel = item.hasItemMeta() ? item.getItemMeta().getEnchantLevel(Enchantment.DENSITY) : 0;
-            
-            // Matte: Låg bas-skada (5.0), men ökar med 25.0 skada per Density-nivå.
-            // Density 3 ger totalt 80.0 skada (40 hjärtan) till alla i radien!
             double finalDamage = 5.0 + (densityLevel * 25.0);
 
             for (Entity e : event.getEntity().getNearbyEntities(radius, 3, radius)) {
@@ -364,33 +358,7 @@ public class BullePlugin extends JavaPlugin implements Listener, CommandExecutor
 
         if (args.length == 0) return false;
 
-        if (args[0].equalsIgnoreCase("crate")) {
-            int playerBullar = getBullar(player.getUniqueId());
-            if (playerBullar < 100) {
-                player.sendMessage(Component.text("En Bulle Crate kostar 100 Bullar! Du saknar pengar.").color(NamedTextColor.RED));
-                return true;
-            }
-
-            setBullar(player.getUniqueId(), playerBullar - 100);
-
-            String[] items = {"mace", "pickaxe", "sword", "axe", "shovel", "hoe"};
-            String randomItem = items[new Random().nextInt(items.length)];
-
-            player.sendMessage(Component.text("Du öppnade en Bulle Crate!").color(NamedTextColor.GREEN));
-            player.playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_TWINKLE, 1.0f, 1.0f);
-            player.getWorld().spawnParticle(Particle.CONFETTI, player.getLocation().add(0, 1, 0), 50, 0.5, 0.5, 0.5, 0.1);
-
-            switch (randomItem) {
-                case "mace" -> player.getInventory().addItem(createBulleItem(Material.MACE, "Bulle Mace", 2613));
-                case "pickaxe" -> player.getInventory().addItem(createBulleItem(Material.NETHERITE_PICKAXE, "Bulle Pickaxe", 2614));
-                case "sword" -> player.getInventory().addItem(createBulleItem(Material.NETHERITE_SWORD, "Bulle Sword", 2615));
-                case "axe" -> player.getInventory().addItem(createBulleItem(Material.NETHERITE_AXE, "Bulle Axe", 2611));
-                case "shovel" -> player.getInventory().addItem(createBulleItem(Material.NETHERITE_SHOVEL, "Bulle Shovel", 2612));
-                case "hoe" -> player.getInventory().addItem(createBulleItem(Material.NETHERITE_HOE, "Bulle Hoe", 2610));
-            }
-            return true;
-        }
-
+        // Endast admin commands kvar för att spawna bas-vapnen
         if (player.isOp()) {
             switch (args[0].toLowerCase()) {
                 case "mace" -> player.getInventory().addItem(createBulleItem(Material.MACE, "Bulle Mace", 2613));
@@ -433,7 +401,7 @@ public class BullePlugin extends JavaPlugin implements Listener, CommandExecutor
 
         if (item.getType() == Material.MACE) {
             meta.addEnchant(Enchantment.DENSITY, 3, true);
-            meta.addEnchant(Enchantment.WIND_BURST, 2, true); // Inbyggd Wind Burst 2
+            meta.addEnchant(Enchantment.WIND_BURST, 2, true);
         } else if (item.getType() == Material.NETHERITE_PICKAXE) {
             int effLvl = (newLevel == 1) ? 1 : (newLevel == 2) ? 3 : 6;
             meta.addEnchant(Enchantment.EFFICIENCY, effLvl, true);
@@ -477,7 +445,6 @@ public class BullePlugin extends JavaPlugin implements Listener, CommandExecutor
         return false;
     }
 
-    // --- BLOCKERA ENCHANTS (ANVIL & ENCHANTMENT TABLE) ---
     @EventHandler
     public void onAnvilPrepare(PrepareAnvilEvent event) {
         ItemStack firstItem = event.getInventory().getItem(0);
