@@ -1,0 +1,7 @@
+name: Bulle
+version: 1.0
+main: Bulle.BullePlugin
+api-version: 26.1.2
+
+commands:
+  Bulle:
